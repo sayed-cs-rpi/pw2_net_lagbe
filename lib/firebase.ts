@@ -1,0 +1,61 @@
+import { initializeApp } from 'firebase/app';
+import { getAuth, connectAuthEmulator } from 'firebase/auth';
+import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
+import { getMessaging, getToken } from 'firebase/messaging';
+
+const firebaseConfig = {
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || '',
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || '',
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || '',
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || '',
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || '',
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || '',
+};
+
+// Check if Firebase is configured
+export const isFirebaseConfigured = !!(
+  process.env.NEXT_PUBLIC_FIREBASE_API_KEY &&
+  process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID
+);
+
+let app: ReturnType<typeof initializeApp> | null = null;
+export let auth: ReturnType<typeof getAuth> | null = null;
+export let db: ReturnType<typeof getFirestore> | null = null;
+
+try {
+  if (isFirebaseConfigured) {
+    app = initializeApp(firebaseConfig);
+    auth = getAuth(app);
+    db = getFirestore(app);
+  }
+} catch (error) {
+  console.error('[v0] Firebase initialization error:', error);
+}
+
+// Initialize messaging if in browser
+let messaging: ReturnType<typeof getMessaging> | null = null;
+if (typeof window !== 'undefined' && 'serviceWorker' in navigator && app) {
+  try {
+    messaging = getMessaging(app);
+  } catch (error) {
+    console.log('[v0] Messaging not available:', error);
+  }
+}
+export { messaging };
+
+export async function requestNotificationPermission() {
+  if (!messaging || !process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY) return null;
+  
+  try {
+    const permission = await Notification.requestPermission();
+    if (permission === 'granted') {
+      const token = await getToken(messaging, {
+        vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY,
+      });
+      return token;
+    }
+  } catch (error) {
+    console.error('[v0] Error getting notification token:', error);
+  }
+  return null;
+}
