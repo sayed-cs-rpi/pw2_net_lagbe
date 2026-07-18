@@ -22,10 +22,10 @@ export default function TicketDetailPage({ params }: { params: { ticketId: strin
   useEffect(() => {
     async function loadTicket() {
       try {
-        const ticketData = await getTicket(params.ticketId);
+        const ticketData = await getTicket(params?.ticketId);
         if (ticketData && ticketData.complainerId === user?.uid) {
           setTicket(ticketData);
-          const messagesData = await getTicketMessages(params.ticketId);
+          const messagesData = await getTicketMessages(params?.ticketId);
           setMessages(messagesData);
         }
       } catch (error) {
@@ -39,7 +39,7 @@ export default function TicketDetailPage({ params }: { params: { ticketId: strin
     if (user?.uid) {
       loadTicket();
     }
-  }, [params.ticketId, user?.uid]);
+  }, [params?.ticketId, user?.uid]);
 
   async function handleSendMessage(e: React.FormEvent) {
     e.preventDefault();
