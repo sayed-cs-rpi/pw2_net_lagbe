@@ -2,8 +2,8 @@
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { onAuthStateChanged, signOut as firebaseSignOut, User as FirebaseUser } from 'firebase/auth';
-import { auth, db, isFirebaseConfigured } from './firebase';
-import { doc, getDoc } from 'firebase/firestore';
+import { auth, db, isFirebaseConfigured, requestNotificationPermission } from './firebase';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { User, UserRole } from './types';
 
 interface AuthContextType {
@@ -31,6 +31,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
           if (userDoc.exists()) {
             const userData = userDoc.data();
+            
+            // Request notification permission and store FCM token
+            const fcmToken = await requestNotificationPermission();
+            if (fcmToken && (!userData.fcmToken || userData.fcmToken !== fcmToken)) {
+              await updateDoc(doc(db, 'users', firebaseUser.uid), { fcmToken });
+            }
+            
             setUser({
               uid: firebaseUser.uid,
               email: firebaseUser.email || '',
@@ -39,6 +46,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               createdAt: userData.createdAt?.toDate?.() || new Date(),
               updatedAt: userData.updatedAt?.toDate?.() || new Date(),
               avatar: userData.avatar,
+              fcmToken: fcmToken || userData.fcmToken,
             });
           }
         } catch (error) {

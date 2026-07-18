@@ -4,6 +4,7 @@ import './globals.css'
 import { AuthProvider } from '@/lib/auth-context'
 import { Toaster } from 'react-hot-toast'
 import { SetupCheck } from '@/components/setup-check'
+import { ServiceWorkerRegistration } from '@/components/service-worker-registration'
 
 export const metadata: Metadata = {
   title: 'Support Ticket System',
@@ -45,6 +46,7 @@ export default function RootLayout({
     <html lang="en" className="bg-background">
       <body className="antialiased">
         <SetupCheck />
+        <ServiceWorkerRegistration />
         <AuthProvider>
           {children}
           <Toaster position="top-right" />

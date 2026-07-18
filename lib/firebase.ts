@@ -32,6 +32,21 @@ try {
   console.error('[v0] Firebase initialization error:', error);
 }
 
+// Helper to get non-null auth/db (throws if not configured)
+export function getAuthInstance() {
+  if (!auth || !db) {
+    throw new Error('Firebase is not configured. Please set up your environment variables.');
+  }
+  return auth;
+}
+
+export function getDbInstance() {
+  if (!db) {
+    throw new Error('Firebase is not configured. Please set up your environment variables.');
+  }
+  return db;
+}
+
 // Initialize messaging if in browser
 let messaging: ReturnType<typeof getMessaging> | null = null;
 if (typeof window !== 'undefined' && 'serviceWorker' in navigator && app) {

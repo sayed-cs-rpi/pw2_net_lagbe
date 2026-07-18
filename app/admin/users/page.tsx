@@ -2,34 +2,26 @@
 
 import { useEffect, useState } from 'react';
 import { collection, getDocs, orderBy, query } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { getDbInstance } from '@/lib/firebase';
 import { User, UserRole } from '@/lib/types';
-import { Users, Shield, Wrench } from 'lucide-react';
+import { Users, Shield, Wrench, Plus } from 'lucide-react';
+import { useAdminCreateUser } from '@/lib/auth-hooks';
 
 export default function AdminUsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [roleFilter, setRoleFilter] = useState<UserRole | 'all'>('all');
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const { adminCreateUser, loading: createLoading } = useAdminCreateUser();
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+    role: 'complainer' as UserRole,
+  });
 
   useEffect(() => {
-    async function fetchUsers() {
-      try {
-        const q = query(collection(db, 'users'), orderBy('createdAt', 'desc'));
-        const querySnapshot = await getDocs(q);
-        const userData = querySnapshot.docs.map(doc => ({
-          uid: doc.id,
-          ...doc.data(),
-          createdAt: doc.data().createdAt?.toDate?.() || new Date(),
-          updatedAt: doc.data().updatedAt?.toDate?.() || new Date(),
-        })) as User[];
-        setUsers(userData);
-      } catch (error) {
-        console.error('[v0] Error fetching users:', error);
-      } finally {
-        setLoading(false);
-      }
-    }
-
     fetchUsers();
   }, []);
 
@@ -66,6 +58,49 @@ export default function AdminUsersPage() {
     }
   };
 
+  async function handleCreateUser(e: React.FormEvent) {
+    e.preventDefault();
+    
+    if (formData.password !== formData.confirmPassword) {
+      alert('Passwords do not match');
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      alert('Password must be at least 6 characters');
+      return;
+    }
+
+    try {
+      await adminCreateUser(formData.email, formData.password, formData.name, formData.role);
+      setShowCreateModal(false);
+      setFormData({ name: '', email: '', password: '', confirmPassword: '', role: 'complainer' });
+      // Refresh users list
+      fetchUsers();
+    } catch (error) {
+      console.error('Error creating user:', error);
+    }
+  }
+
+  async function fetchUsers() {
+    try {
+      const db = getDbInstance();
+      const q = query(collection(db, 'users'), orderBy('createdAt', 'desc'));
+      const querySnapshot = await getDocs(q);
+      const userData = querySnapshot.docs.map(doc => ({
+        uid: doc.id,
+        ...doc.data(),
+        createdAt: doc.data().createdAt?.toDate?.() || new Date(),
+        updatedAt: doc.data().updatedAt?.toDate?.() || new Date(),
+      })) as User[];
+      setUsers(userData);
+    } catch (error) {
+      console.error('[v0] Error fetching users:', error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   if (loading) {
     return (
       <div className="text-center py-12">
@@ -77,9 +112,18 @@ export default function AdminUsersPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-3xl font-bold text-gray-900">User Management</h2>
-        <p className="text-gray-600 mt-2">View and manage system users</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-3xl font-bold text-gray-100">User Management</h2>
+          <p className="text-gray-400 mt-2">View and manage system users</p>
+        </div>
+        <button
+          onClick={() => setShowCreateModal(true)}
+          className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
+        >
+          <Plus className="w-4 h-4" />
+          Create User
+        </button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -181,6 +225,91 @@ export default function AdminUsersPage() {
           </div>
         )}
       </div>
+
+      {showCreateModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
+            <div className="p-6 border-b border-gray-200">
+              <h3 className="text-xl font-semibold text-gray-900">Create New User</h3>
+              <p className="text-sm text-gray-600 mt-1">Fill in the details to create a new user account</p>
+            </div>
+            <form onSubmit={handleCreateUser} className="p-6 space-y-4 text-gray-600">
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">Full Name</label>
+                <input
+                  type="text"
+                  required
+                  value={formData.name}
+                  onChange={e => setFormData({ ...formData, name: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600"
+                  placeholder="John Doe"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">Email</label>
+                <input
+                  type="email"
+                  required
+                  value={formData.email}
+                  onChange={e => setFormData({ ...formData, email: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600"
+                  placeholder="you@example.com"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">Role</label>
+                <select
+                  value={formData.role}
+                  onChange={e => setFormData({ ...formData, role: e.target.value as UserRole })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600"
+                >
+                  <option value="complainer">Ticket Creator (Complainer)</option>
+                  <option value="technician">Support Technician</option>
+                  <option value="admin">Administrator</option>
+                </select>
+              </div>
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">Password</label>
+                <input
+                  type="password"
+                  required
+                  value={formData.password}
+                  onChange={e => setFormData({ ...formData, password: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600"
+                  placeholder="••••••••"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">Confirm Password</label>
+                <input
+                  type="password"
+                  required
+                  value={formData.confirmPassword}
+                  onChange={e => setFormData({ ...formData, confirmPassword: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600"
+                  placeholder="••••••••"
+                />
+              </div>
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowCreateModal(false)}
+                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={createLoading}
+                  className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition disabled:opacity-50"
+                >
+                  {createLoading ? 'Creating...' : 'Create User'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

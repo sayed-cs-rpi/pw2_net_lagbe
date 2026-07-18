@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import { getTicket, getTicketMessages, addTicketMessage, updateTicket } from '@/lib/firestore-service';
+import { sendTicketMessageNotification } from '@/lib/notifications';
 import { Ticket, TicketMessage } from '@/lib/types';
 import { StatusBadge, PriorityBadge } from '@/components/status-badge';
 import { format } from 'date-fns';
@@ -56,6 +57,11 @@ export default function TicketDetailPage({ params }: { params: { ticketId: strin
         attachments: [],
         isInternal: false,
       });
+
+      // Send notification to the assigned technician
+      if (ticket.assignedToId) {
+        await sendTicketMessageNotification(ticket, user.name, ticket.assignedToId);
+      }
 
       setMessageText('');
       const updatedMessages = await getTicketMessages(ticket.id);

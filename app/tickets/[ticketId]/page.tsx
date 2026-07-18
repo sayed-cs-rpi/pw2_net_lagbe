@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import { getTicket, getTicketMessages, addTicketMessage, updateTicket } from '@/lib/firestore-service';
+import { sendTicketStatusNotification, sendTicketMessageNotification } from '@/lib/notifications';
 import { Ticket, TicketMessage } from '@/lib/types';
 import { StatusBadge, PriorityBadge } from '@/components/status-badge';
 import { format } from 'date-fns';
@@ -69,6 +70,18 @@ export default function TicketDetailPage({ params }: { params: { ticketId: strin
         isInternal: user.role === 'technician' || user.role === 'admin',
       });
 
+      // Send notification to the other party
+      let recipientId: string | undefined;
+      if (user.role === 'complainer' && ticket.assignedToId) {
+        recipientId = ticket.assignedToId;
+      } else if (user.role !== 'complainer' && ticket.complainerId !== user.uid) {
+        recipientId = ticket.complainerId;
+      }
+
+      if (recipientId) {
+        await sendTicketMessageNotification(ticket, user.name, recipientId);
+      }
+
       setMessageText('');
       const updatedMessages = await getTicketMessages(ticket.id);
       setMessages(updatedMessages);
@@ -84,12 +97,16 @@ export default function TicketDetailPage({ params }: { params: { ticketId: strin
   async function handleStatusChange(newStatus: string) {
     if (!ticket || !user) return;
 
+    const previousStatus = ticket.status;
+    
     try {
-      await updateTicket(ticket.id, {
-        status: newStatus as any,
-      });
+      const updatedTicket = { ...ticket, status: newStatus as any };
+      await updateTicket(ticket.id, updatedTicket);
 
-      setTicket({ ...ticket, status: newStatus as any });
+      // Send notification about status change
+      await sendTicketStatusNotification(updatedTicket, previousStatus);
+
+      setTicket(updatedTicket);
       toast.success('Status updated!');
     } catch (error) {
       console.error('[v0] Error updating status:', error);

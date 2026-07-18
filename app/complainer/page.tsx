@@ -12,6 +12,8 @@ export default function ComplainerPage() {
   const { user } = useAuth();
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
+  console.log(tickets)
+  console.log(tickets)
 
   useEffect(() => {
     async function fetchTickets() {

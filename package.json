@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "node scripts/inject-sw-env.js && next build",
     "start": "next start",
     "lint": "eslint ."
   },
@@ -14,9 +14,9 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.4.0",
-    "firebase": "^12.16.0",
+    "firebase": "^11.10.0",
     "lucide-react": "^1.16.0",
-    "next": "16.2.6",
+    "next": "15.5.20",
     "next-firebase-auth": "^1.4.0",
     "react": "^19",
     "react-dom": "^19",

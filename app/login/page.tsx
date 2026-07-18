@@ -29,7 +29,10 @@ export default function LoginPage() {
 
     try {
       const authUser = await signIn(formData.email, formData.password);
-      // Auth context will handle fetching user data and redirecting
+      router.push('/dashboard');
+
+
+      // console.log('Auth user:', authUser);
     } catch (error) {
       console.error('[v0] Sign in error:', error);
     }
@@ -50,10 +53,7 @@ export default function LoginPage() {
     <div className="min-h-screen bg-background flex items-center justify-center p-6">
       <div className="w-full max-w-md space-y-8">
         <div>
-          <Link href="/" className="text-sm text-foreground/60 hover:text-foreground">
-            ← Back
-          </Link>
-          <h1 className="text-3xl font-semibold mt-6 tracking-tight">Sign In</h1>
+          <h1 className="text-3xl font-semibold tracking-tight">Sign In</h1>
           <p className="text-foreground/60 text-sm mt-2">Enter your credentials to continue</p>
         </div>
 
@@ -96,10 +96,7 @@ export default function LoginPage() {
         </form>
 
         <div className="text-center text-sm text-foreground/60">
-          Don&apos;t have an account?{' '}
-          <Link href="/signup" className="text-foreground font-medium hover:underline">
-            Create one
-          </Link>
+          Contact your administrator to create an account
         </div>
       </div>
     </div>

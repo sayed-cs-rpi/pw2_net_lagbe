@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 import { createTicket } from '@/lib/firestore-service';
+import { sendTicketCreatedNotification } from '@/lib/notifications';
 import { TicketPriority } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import toast from 'react-hot-toast';
@@ -56,6 +57,25 @@ export default function CreateTicketPage() {
         tags: [],
       });
 
+      // Send notification to admins about new ticket
+      const newTicket = {
+        id: ticketId,
+        complainerId: user.uid,
+        complainerName: user.name,
+        complainerEmail: user.email,
+        complainerPhone: formData.phone,
+        title: formData.title,
+        description: formData.description,
+        priority: formData.priority,
+        status: 'open' as const,
+        category: formData.category,
+        attachments: [],
+        tags: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      await sendTicketCreatedNotification(newTicket);
+
       toast.success('Ticket created successfully!');
       router.push(`/complainer/${ticketId}`);
     } catch (error) {
@@ -77,7 +97,7 @@ export default function CreateTicketPage() {
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Create New Ticket</h1>
         <p className="text-gray-600 mb-8">Describe the issue you&apos;re experiencing</p>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6 text-gray-700">
           <div>
             <label className="block text-sm font-semibold text-gray-900 mb-2">
               Title <span className="text-red-500">*</span>

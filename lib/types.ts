@@ -8,6 +8,7 @@ export interface User {
   createdAt: Date;
   updatedAt: Date;
   avatar?: string;
+  fcmToken?: string;
 }
 
 export interface Shift {

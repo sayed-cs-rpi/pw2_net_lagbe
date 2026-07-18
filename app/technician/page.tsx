@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import { getUnassignedTickets, updateTicket } from '@/lib/firestore-service';
+import { sendTicketAssignmentNotification } from '@/lib/notifications';
 import { Ticket } from '@/lib/types';
 import { TicketCard } from '@/components/ticket-card';
 import { Badge } from '@/components/badge';
@@ -37,11 +38,17 @@ export default function TechnicianQueuePage() {
 
     setAssigning(ticket.id);
     try {
-      await updateTicket(ticket.id, {
+      const updatedTicket = {
+        ...ticket,
         assignedToId: user.uid,
         assignedToName: user.name,
-        status: 'assigned',
-      });
+        status: 'assigned' as const,
+      };
+      
+      await updateTicket(ticket.id, updatedTicket);
+
+      // Send notification to the technician
+      await sendTicketAssignmentNotification(updatedTicket);
 
       setTickets(tickets.filter(t => t.id !== ticket.id));
       toast.success(`Ticket #${ticket.id.substring(0, 8)} assigned to you!`);

@@ -76,7 +76,7 @@ export default function AdminDashboard() {
                   <p className="text-sm text-gray-600 mb-1">{card.label}</p>
                   <p className="text-3xl font-bold text-gray-900">{card.value}</p>
                 </div>
-                <Icon className="w-8 h-8 text-gray-400" />
+                {/* <Icon className="w-8 h-8 text-gray-400" /> */}
               </div>
             </div>
           );
