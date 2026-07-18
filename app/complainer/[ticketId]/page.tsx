@@ -129,6 +129,15 @@ export default function TicketDetailPage({ params }: { params: { ticketId: strin
               <p className="text-lg font-medium text-gray-900">{ticket.assignedToName}</p>
             </div>
           )}
+          {ticket.roomName && (
+            <div>
+              <p className="text-sm text-gray-600 mb-1">Room</p>
+              <p className="text-lg font-medium text-gray-900">{ticket.roomName}</p>
+              <p className="text-sm text-gray-600">
+                {ticket.roomBuilding} · Floor {ticket.roomFloor} · #{ticket.roomNumber}
+              </p>
+            </div>
+          )}
           {ticket.resolvedAt && (
             <div>
               <p className="text-sm text-gray-600 mb-1">Resolved</p>

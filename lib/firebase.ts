@@ -59,13 +59,24 @@ if (typeof window !== 'undefined' && 'serviceWorker' in navigator && app) {
 export { messaging };
 
 export async function requestNotificationPermission() {
-  if (!messaging || !process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY) return null;
+  if (typeof window === 'undefined' || !('Notification' in window)) return null;
+  if (!messaging || !process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY) {
+    // Still request permission so local Notification API works without VAPID.
+    try {
+      await Notification.requestPermission();
+    } catch {
+      /* ignore */
+    }
+    return null;
+  }
   
   try {
     const permission = await Notification.requestPermission();
     if (permission === 'granted') {
+      const registration = await navigator.serviceWorker.ready;
       const token = await getToken(messaging, {
         vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY,
+        serviceWorkerRegistration: registration,
       });
       return token;
     }

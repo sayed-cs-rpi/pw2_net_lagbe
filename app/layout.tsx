@@ -10,6 +10,12 @@ export const metadata: Metadata = {
   title: 'Support Ticket System',
   description: 'Enterprise support ticket management system',
   generator: 'v0.app',
+  manifest: '/manifest.webmanifest',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'Tickets',
+  },
   icons: {
     icon: [
       {
@@ -24,6 +30,11 @@ export const metadata: Metadata = {
         url: '/icon.svg',
         type: 'image/svg+xml',
       },
+      {
+        url: '/icon-192.png',
+        sizes: '192x192',
+        type: 'image/png',
+      },
     ],
     apple: '/apple-icon.png',
   },
@@ -31,10 +42,7 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   colorScheme: 'light dark',
-  themeColor: [
-    { media: '(prefers-color-scheme: light)', color: 'white' },
-    { media: '(prefers-color-scheme: dark)', color: 'black' },
-  ],
+  themeColor: '#2563eb',
 }
 
 export default function RootLayout({

@@ -2,9 +2,20 @@
 
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/lib/auth-context';
-import { getTicket, getTicketMessages, addTicketMessage, updateTicket } from '@/lib/firestore-service';
-import { sendTicketStatusNotification, sendTicketMessageNotification } from '@/lib/notifications';
-import { Ticket, TicketMessage } from '@/lib/types';
+import {
+  getTicket,
+  getTicketMessages,
+  addTicketMessage,
+  updateTicket,
+  assignTicket,
+  getUsersByRole,
+} from '@/lib/firestore-service';
+import {
+  sendTicketStatusNotification,
+  sendTicketMessageNotification,
+  sendTicketAssignmentNotification,
+} from '@/lib/notifications';
+import { Ticket, TicketMessage, TicketStatus, User } from '@/lib/types';
 import { StatusBadge, PriorityBadge } from '@/components/status-badge';
 import { format } from 'date-fns';
 import { useRouter } from 'next/navigation';
@@ -12,19 +23,40 @@ import { ArrowLeft, Send } from 'lucide-react';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
 
-export default function TicketDetailPage({ params }: { params: { ticketId: string } }) {
+export default function TicketDetailPage({
+  params,
+}: {
+  params: Promise<{ ticketId: string }>;
+}) {
   const { user } = useAuth();
   const router = useRouter();
+  const [ticketId, setTicketId] = useState<string>('');
   const [ticket, setTicket] = useState<Ticket | null>(null);
   const [messages, setMessages] = useState<TicketMessage[]>([]);
   const [messageText, setMessageText] = useState('');
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+  const [technicians, setTechnicians] = useState<User[]>([]);
+  const [selectedTechId, setSelectedTechId] = useState('');
+  const [assigning, setAssigning] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function resolveParams() {
+      const resolved = await Promise.resolve(params);
+      if (!cancelled) setTicketId(resolved.ticketId);
+    }
+    resolveParams();
+    return () => {
+      cancelled = true;
+    };
+  }, [params]);
 
   useEffect(() => {
     async function loadTicket() {
+      if (!ticketId || !user?.uid) return;
       try {
-        const ticketData = await getTicket(params.ticketId);
+        const ticketData = await getTicket(ticketId);
         if (ticketData) {
           const isComplainer = ticketData.complainerId === user?.uid;
           const isTechnician = ticketData.assignedToId === user?.uid;
@@ -37,8 +69,14 @@ export default function TicketDetailPage({ params }: { params: { ticketId: strin
           }
 
           setTicket(ticketData);
-          const messagesData = await getTicketMessages(params.ticketId);
+          setSelectedTechId(ticketData.assignedToId || '');
+          const messagesData = await getTicketMessages(ticketId);
           setMessages(messagesData);
+
+          if (isAdmin) {
+            const techs = await getUsersByRole('technician');
+            setTechnicians(techs);
+          }
         }
       } catch (error) {
         console.error('[v0] Error loading ticket:', error);
@@ -48,10 +86,8 @@ export default function TicketDetailPage({ params }: { params: { ticketId: strin
       }
     }
 
-    if (user?.uid) {
-      loadTicket();
-    }
-  }, [params.ticketId, user?.uid, user?.role, router]);
+    loadTicket();
+  }, [ticketId, user?.uid, user?.role, router]);
 
   async function handleSendMessage(e: React.FormEvent) {
     e.preventDefault();
@@ -70,7 +106,6 @@ export default function TicketDetailPage({ params }: { params: { ticketId: strin
         isInternal: user.role === 'technician' || user.role === 'admin',
       });
 
-      // Send notification to the other party
       let recipientId: string | undefined;
       if (user.role === 'complainer' && ticket.assignedToId) {
         recipientId = ticket.assignedToId;
@@ -94,23 +129,48 @@ export default function TicketDetailPage({ params }: { params: { ticketId: strin
     }
   }
 
-  async function handleStatusChange(newStatus: string) {
+  async function handleStatusChange(newStatus: TicketStatus) {
     if (!ticket || !user) return;
 
     const previousStatus = ticket.status;
-    
+
     try {
-      const updatedTicket = { ...ticket, status: newStatus as any };
-      await updateTicket(ticket.id, updatedTicket);
-
-      // Send notification about status change
+      await updateTicket(ticket.id, { status: newStatus });
+      const updatedTicket = { ...ticket, status: newStatus };
       await sendTicketStatusNotification(updatedTicket, previousStatus);
-
       setTicket(updatedTicket);
       toast.success('Status updated!');
     } catch (error) {
       console.error('[v0] Error updating status:', error);
       toast.error('Failed to update status');
+    }
+  }
+
+  async function handleAdminAssign() {
+    if (!ticket || !user || user.role !== 'admin') return;
+    const tech = technicians.find(t => t.uid === selectedTechId);
+    if (!tech) {
+      toast.error('Please select a technician');
+      return;
+    }
+
+    setAssigning(true);
+    try {
+      await assignTicket(ticket.id, tech.uid, tech.name);
+      const updatedTicket = {
+        ...ticket,
+        assignedToId: tech.uid,
+        assignedToName: tech.name,
+        status: 'assigned' as const,
+      };
+      await sendTicketAssignmentNotification(updatedTicket);
+      setTicket(updatedTicket);
+      toast.success(`Assigned to ${tech.name}`);
+    } catch (error) {
+      console.error('[v0] Error assigning ticket:', error);
+      toast.error('Failed to assign ticket');
+    } finally {
+      setAssigning(false);
     }
   }
 
@@ -134,7 +194,9 @@ export default function TicketDetailPage({ params }: { params: { ticketId: strin
     );
   }
 
-  const canUpdateStatus = user?.role === 'technician' && ticket.assignedToId === user.uid || user?.role === 'admin';
+  const canUpdateStatus =
+    (user?.role === 'technician' && ticket.assignedToId === user.uid) ||
+    user?.role === 'admin';
 
   return (
     <div className="min-h-screen bg-gray-50 p-4">
@@ -165,7 +227,9 @@ export default function TicketDetailPage({ params }: { params: { ticketId: strin
             </div>
             <div>
               <p className="text-sm text-gray-600 mb-1">Created</p>
-              <p className="text-lg font-medium text-gray-900">{format(ticket.createdAt, 'MMM dd, yyyy HH:mm')}</p>
+              <p className="text-lg font-medium text-gray-900">
+                {format(ticket.createdAt, 'MMM dd, yyyy HH:mm')}
+              </p>
             </div>
             <div>
               <p className="text-sm text-gray-600 mb-1">Complainer</p>
@@ -178,6 +242,15 @@ export default function TicketDetailPage({ params }: { params: { ticketId: strin
                 <p className="text-lg font-medium text-gray-900">{ticket.assignedToName}</p>
               </div>
             )}
+            {ticket.roomName && (
+              <div className="md:col-span-2">
+                <p className="text-sm text-gray-600 mb-1">Room</p>
+                <p className="text-lg font-medium text-gray-900">{ticket.roomName}</p>
+                <p className="text-sm text-gray-600">
+                  {ticket.roomBuilding} · Floor {ticket.roomFloor} · #{ticket.roomNumber}
+                </p>
+              </div>
+            )}
           </div>
 
           <div>
@@ -185,11 +258,45 @@ export default function TicketDetailPage({ params }: { params: { ticketId: strin
             <p className="text-gray-600 whitespace-pre-wrap">{ticket.description}</p>
           </div>
 
+          {user?.role === 'admin' && (
+            <div className="mt-8 pt-8 border-t border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                {ticket.assignedToId ? 'Reassign Technician' : 'Assign Technician'}
+              </h3>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <select
+                  value={selectedTechId}
+                  onChange={e => setSelectedTechId(e.target.value)}
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                >
+                  <option value="">Select technician...</option>
+                  {technicians.map(tech => (
+                    <option key={tech.uid} value={tech.uid}>
+                      {tech.name} ({tech.email})
+                    </option>
+                  ))}
+                </select>
+                <button
+                  onClick={handleAdminAssign}
+                  disabled={assigning || !selectedTechId}
+                  className="bg-purple-600 hover:bg-purple-700 text-white font-semibold px-6 py-2 rounded-lg transition-colors disabled:opacity-50"
+                >
+                  {assigning ? 'Assigning...' : ticket.assignedToId ? 'Reassign' : 'Assign'}
+                </button>
+              </div>
+              {technicians.length === 0 && (
+                <p className="text-sm text-amber-700 mt-2">No technician accounts found.</p>
+              )}
+            </div>
+          )}
+
           {canUpdateStatus && (
             <div className="mt-8 pt-8 border-t border-gray-200">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">Update Status</h3>
               <div className="flex flex-wrap gap-2">
-                {['open', 'assigned', 'in_progress', 'resolved', 'closed'].map(status => (
+                {(
+                  ['open', 'assigned', 'in_progress', 'resolved', 'closed'] as TicketStatus[]
+                ).map(status => (
                   <button
                     key={status}
                     onClick={() => handleStatusChange(status)}
@@ -199,7 +306,8 @@ export default function TicketDetailPage({ params }: { params: { ticketId: strin
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                     }`}
                   >
-                    {status.replace('_', ' ').charAt(0).toUpperCase() + status.replace('_', ' ').slice(1)}
+                    {status.replace('_', ' ').charAt(0).toUpperCase() +
+                      status.replace('_', ' ').slice(1)}
                   </button>
                 ))}
               </div>
@@ -224,11 +332,17 @@ export default function TicketDetailPage({ params }: { params: { ticketId: strin
                   <div>
                     <p className="font-medium text-gray-900">
                       {message.userName}
-                      {message.isInternal && <span className="ml-2 text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded">Internal</span>}
+                      {message.isInternal && (
+                        <span className="ml-2 text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded">
+                          Internal
+                        </span>
+                      )}
                     </p>
                     <p className="text-xs text-gray-500">{message.userRole}</p>
                   </div>
-                  <p className="text-xs text-gray-600">{format(message.createdAt, 'MMM dd, HH:mm')}</p>
+                  <p className="text-xs text-gray-600">
+                    {format(message.createdAt, 'MMM dd, HH:mm')}
+                  </p>
                 </div>
                 <p className="text-gray-700">{message.message}</p>
               </div>

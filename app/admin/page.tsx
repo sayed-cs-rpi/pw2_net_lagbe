@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { getTicketStats, getTickets } from '@/lib/firestore-service';
 import { Ticket } from '@/lib/types';
-import { TrendingUp, AlertCircle, CheckCircle, Clock } from 'lucide-react';
+import { Ticket as TicketIcon, TrendingUp, AlertCircle, CheckCircle, Clock } from 'lucide-react';
 import { orderBy } from 'firebase/firestore';
 
 export default function AdminDashboard() {
@@ -53,7 +53,7 @@ export default function AdminDashboard() {
   }
 
   const statCards = [
-    { label: 'Total Tickets', value: stats.total, icon: Ticket, color: 'bg-blue-50' },
+    { label: 'Total Tickets', value: stats.total, icon: TicketIcon, color: 'bg-blue-50' },
     { label: 'Open', value: stats.open, icon: AlertCircle, color: 'bg-red-50' },
     { label: 'In Progress', value: stats.inProgress, icon: Clock, color: 'bg-yellow-50' },
     { label: 'Resolved', value: stats.resolved + stats.closed, icon: CheckCircle, color: 'bg-green-50' },

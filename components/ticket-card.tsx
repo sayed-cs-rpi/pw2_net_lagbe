@@ -4,7 +4,7 @@ import { Ticket, TicketPriority, TicketStatus } from '@/lib/types';
 import { Badge } from './badge';
 import { format } from 'date-fns';
 import Link from 'next/link';
-import { Clock, AlertCircle, MessageSquare } from 'lucide-react';
+import { Clock, AlertCircle, MapPin } from 'lucide-react';
 
 interface TicketCardProps {
   ticket: Ticket;
@@ -71,6 +71,17 @@ export function TicketCard({ ticket, onClick }: TicketCardProps) {
           </div>
         )}
       </div>
+      {ticket.roomName && (
+        <div className="mt-2 flex items-center gap-1 text-xs text-gray-500">
+          <MapPin className="w-3 h-3" />
+          <span>
+            {ticket.roomName}
+            {ticket.roomBuilding
+              ? ` · ${ticket.roomBuilding}, Floor ${ticket.roomFloor}, #${ticket.roomNumber}`
+              : ''}
+          </span>
+        </div>
+      )}
     </div>
   );
 }

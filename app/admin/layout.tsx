@@ -3,7 +3,7 @@
 import { useAuth } from '@/lib/auth-context';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { BarChart3, Ticket, Users, LogOut } from 'lucide-react';
+import { BarChart3, Ticket, Users, LogOut, Building2 } from 'lucide-react';
 
 export default function AdminLayout({
   children,
@@ -59,6 +59,10 @@ export default function AdminLayout({
             <Link href="/admin/tickets" className="flex items-center gap-2 text-gray-600 hover:text-gray-900">
               <Ticket className="w-5 h-5" />
               <span>Tickets</span>
+            </Link>
+            <Link href="/admin/rooms" className="flex items-center gap-2 text-gray-600 hover:text-gray-900">
+              <Building2 className="w-5 h-5" />
+              <span>Rooms</span>
             </Link>
             <Link href="/admin/users" className="flex items-center gap-2 text-gray-600 hover:text-gray-900">
               <Users className="w-5 h-5" />

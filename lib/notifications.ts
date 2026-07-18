@@ -1,5 +1,5 @@
 import { getMessaging, getToken, onMessage } from 'firebase/messaging';
-import { messaging } from './firebase';
+import { messaging, auth } from './firebase';
 import { doc, getDoc, collection, getDocs, query, where } from 'firebase/firestore';
 import { getDbInstance } from './firebase';
 import { Ticket, User } from './types';
@@ -32,19 +32,24 @@ export async function sendNotificationToUser(
 
     if (!fcmToken) {
       console.warn('[v0] No FCM token for user:', userId);
-      return false;
+      // Still allow local notification if this browser is the recipient
+    } else {
+      // Production would POST to FCM via Admin SDK / Cloud Function using fcmToken.
+      console.log('[v0] FCM token present for user:', userId, 'payload:', payload);
     }
 
-    // Note: In a production environment, you would use Firebase Admin SDK on the server
-    // to send notifications. For this client-side implementation, we'll log the notification
-    // and use local notifications as a fallback.
-    console.log('[v0] Would send notification to user:', userId, payload);
-    
-    // Show local notification as fallback
-    if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+    // Client-side fallback: only show a browser notification if THIS session is the recipient.
+    // Cross-device push requires a server with Firebase Admin SDK.
+    const isCurrentUser = auth?.currentUser?.uid === userId;
+    if (
+      isCurrentUser &&
+      typeof window !== 'undefined' &&
+      'Notification' in window &&
+      Notification.permission === 'granted'
+    ) {
       new Notification(payload.title, {
         body: payload.body,
-        icon: '/icon.svg',
+        icon: '/icon-192.png',
         badge: '/icon-light-32x32.png',
         data: payload.data,
       });

@@ -1,15 +1,14 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useAuth } from '@/lib/auth-context';
-import { getUnassignedTickets, updateTicket } from '@/lib/firestore-service';
-import { sendTicketAssignmentNotification } from '@/lib/notifications';
-import { Ticket } from '@/lib/types';
 import { TicketCard } from '@/components/ticket-card';
-import { Badge } from '@/components/badge';
 import toast from 'react-hot-toast';
 import { AlertCircle, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
+import { useAuth } from '@/lib/auth-context';
+import { useEffect, useState } from 'react';
+import { getUnassignedTickets, assignTicket } from '@/lib/firestore-service';
+import { sendTicketAssignmentNotification } from '@/lib/notifications';
+import { Ticket } from '@/lib/types';
 
 export default function TechnicianQueuePage() {
   const { user } = useAuth();
@@ -35,19 +34,22 @@ export default function TechnicianQueuePage() {
 
   async function handleAssignTicket(ticket: Ticket) {
     if (!user) return;
+    if (ticket.assignedToId) {
+      toast.error('Ticket already assigned');
+      return;
+    }
 
     setAssigning(ticket.id);
     try {
+      await assignTicket(ticket.id, user.uid, user.name);
+
       const updatedTicket = {
         ...ticket,
         assignedToId: user.uid,
         assignedToName: user.name,
         status: 'assigned' as const,
       };
-      
-      await updateTicket(ticket.id, updatedTicket);
 
-      // Send notification to the technician
       await sendTicketAssignmentNotification(updatedTicket);
 
       setTickets(tickets.filter(t => t.id !== ticket.id));
