@@ -89,8 +89,8 @@ export default function TechnicianShiftPage() {
   if (loading) {
     return (
       <div className="text-center py-12">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
-        <p className="mt-4 text-gray-600">Loading shift information...</p>
+        <div className="animate-spin rounded-full h-12 w-12 border-2 border-foreground/20 border-t-foreground mx-auto"></div>
+        <p className="mt-4 text-foreground/60">Loading shift information...</p>
       </div>
     );
   }
@@ -98,34 +98,34 @@ export default function TechnicianShiftPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-3xl font-bold text-gray-900">My Shift</h2>
-        <p className="text-gray-600 mt-2">Manage your work shift</p>
+        <h2 className="text-3xl font-semibold tracking-tight text-foreground">My Shift</h2>
+        <p className="text-foreground/60 mt-2">Manage your work shift</p>
       </div>
 
       {activeShift ? (
-        <div className="bg-white rounded-lg border border-green-200 shadow-sm p-8">
+        <div className="bg-card border border-border p-8">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-2xl font-bold text-green-600">Shift Active</h3>
-            <div className="w-3 h-3 bg-green-600 rounded-full animate-pulse"></div>
+            <h3 className="text-2xl font-semibold tracking-tight text-foreground">Shift Active</h3>
+            <div className="w-3 h-3 bg-foreground rounded-full animate-pulse"></div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
             <div>
-              <p className="text-sm text-gray-600 mb-1">Started</p>
-              <p className="text-lg font-medium text-gray-900">
+              <p className="text-sm text-foreground/60 mb-1">Started</p>
+              <p className="text-lg font-medium text-foreground">
                 {format(activeShift.startTime, 'MMM dd, yyyy HH:mm')}
               </p>
             </div>
             <div>
-              <p className="text-sm text-gray-600 mb-1">Ending</p>
-              <p className="text-lg font-medium text-gray-900">
+              <p className="text-sm text-foreground/60 mb-1">Ending</p>
+              <p className="text-lg font-medium text-foreground">
                 {format(activeShift.endTime, 'MMM dd, yyyy HH:mm')}
               </p>
             </div>
           </div>
 
-          <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
-            <div className="flex items-center gap-2 text-green-900">
+          <div className="bg-secondary/40 border border-border rounded-lg p-4 mb-6">
+            <div className="flex items-center gap-2 text-foreground">
               <Clock className="w-5 h-5" />
               <p>
                 You are currently available to receive support tickets. Great job staying connected!
@@ -135,38 +135,38 @@ export default function TechnicianShiftPage() {
 
           <button
             onClick={handleEndShift}
-            className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold px-6 py-3 rounded-lg transition-colors flex items-center justify-center gap-2"
+            className="w-full bg-destructive text-white font-medium px-6 py-3 hover:opacity-90 transition flex items-center justify-center gap-2"
           >
             <LogOut className="w-5 h-5" />
             End Shift
           </button>
         </div>
       ) : (
-        <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-8">
+        <div className="bg-card border border-border p-8">
           <div className="text-center mb-8">
-            <h3 className="text-2xl font-bold text-gray-900 mb-2">No Active Shift</h3>
-            <p className="text-gray-600">Start a shift to become available for tickets</p>
+            <h3 className="text-2xl font-semibold tracking-tight text-foreground mb-2">No Active Shift</h3>
+            <p className="text-foreground/60">Start a shift to become available for tickets</p>
           </div>
 
           <button
             onClick={handleStartShift}
             disabled={isStartingShift}
-            className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-3 rounded-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+            className="w-full bg-foreground text-background hover:opacity-90 font-semibold px-6 py-3 rounded-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
           >
             <LogIn className="w-5 h-5" />
             {isStartingShift ? 'Starting Shift...' : 'Start Shift (8 hours)'}
           </button>
 
           {shifts.length > 0 && (
-            <div className="mt-8 pt-8 border-t border-gray-200">
-              <h4 className="text-lg font-semibold text-gray-900 mb-4">Other Active Shifts</h4>
+            <div className="mt-8 pt-8 border-t border-border">
+              <h4 className="text-lg font-semibold text-foreground mb-4">Other Active Shifts</h4>
               <div className="space-y-3">
                 {shifts
                   .filter(s => s.technicianId !== user?.uid)
                   .slice(0, 3)
                   .map(shift => (
-                    <div key={shift.id} className="p-3 bg-gray-50 rounded-lg border border-gray-200">
-                      <p className="text-sm text-gray-600">
+                    <div key={shift.id} className="p-3 bg-secondary/40 rounded-lg border border-border">
+                      <p className="text-sm text-foreground/60">
                         {shift.startTime.toLocaleTimeString()} - {shift.endTime.toLocaleTimeString()}
                       </p>
                     </div>

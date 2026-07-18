@@ -34,22 +34,22 @@ export function TicketCard({ ticket, onClick }: TicketCardProps) {
   return (
     <div
       onClick={onClick}
-      className="block p-4 border border-gray-200 rounded-lg hover:shadow-md transition-shadow cursor-pointer bg-white"
+      className="block p-5 border border-border bg-card hover:bg-secondary/30 transition cursor-pointer"
     >
-      <div className="flex items-start justify-between mb-3">
-        <div className="flex-1">
-          <Link
-            href={`/tickets/${ticket.id}`}
-            className="text-base font-semibold text-blue-600 hover:text-blue-800 line-clamp-2"
-            onClick={e => e.stopPropagation()}
-          >
-            {ticket.title}
-          </Link>
-        </div>
-        <span className="text-xs text-gray-500 ml-2 whitespace-nowrap">#{ticket.id.substring(0, 8)}</span>
+      <div className="flex items-start justify-between mb-2 gap-3">
+        <Link
+          href={`/tickets/${ticket.id}`}
+          className="text-base font-medium text-foreground hover:opacity-70 line-clamp-2 transition"
+          onClick={e => e.stopPropagation()}
+        >
+          {ticket.title}
+        </Link>
+        <span className="text-xs text-foreground/40 whitespace-nowrap font-mono">
+          #{ticket.id.substring(0, 8)}
+        </span>
       </div>
 
-      <p className="text-sm text-gray-600 mb-3 line-clamp-2">{ticket.description}</p>
+      <p className="text-sm text-foreground/60 mb-3 line-clamp-2">{ticket.description}</p>
 
       <div className="flex flex-wrap gap-2 mb-3">
         <Badge variant={priorityInfo.color as any}>
@@ -57,22 +57,22 @@ export function TicketCard({ ticket, onClick }: TicketCardProps) {
           {priorityInfo.label}
         </Badge>
         <Badge variant={statusInfo.color as any}>{statusInfo.label}</Badge>
-        {ticket.category && <Badge variant="default">{ticket.category}</Badge>}
+        {ticket.category && <Badge variant="outline">{ticket.category}</Badge>}
       </div>
 
-      <div className="flex items-center justify-between text-xs text-gray-500">
+      <div className="flex items-center justify-between text-xs text-foreground/50">
         <div className="flex items-center gap-1">
           <Clock className="w-3 h-3" />
           {createdDate}
         </div>
         {ticket.assignedToName && (
-          <div className="text-gray-600">
-            Assigned to: <span className="font-medium">{ticket.assignedToName}</span>
+          <div>
+            Assigned to: <span className="text-foreground/80">{ticket.assignedToName}</span>
           </div>
         )}
       </div>
       {ticket.roomName && (
-        <div className="mt-2 flex items-center gap-1 text-xs text-gray-500">
+        <div className="mt-2 flex items-center gap-1 text-xs text-foreground/50">
           <MapPin className="w-3 h-3" />
           <span>
             {ticket.roomName}

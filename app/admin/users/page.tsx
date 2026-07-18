@@ -48,14 +48,7 @@ export default function AdminUsersPage() {
   };
 
   const getRoleColor = (role: UserRole) => {
-    switch (role) {
-      case 'admin':
-        return 'bg-purple-100 text-purple-800';
-      case 'technician':
-        return 'bg-green-100 text-green-800';
-      default:
-        return 'bg-blue-100 text-blue-800';
-    }
+    return 'bg-secondary text-foreground';
   };
 
   async function handleCreateUser(e: React.FormEvent) {
@@ -104,8 +97,8 @@ export default function AdminUsersPage() {
   if (loading) {
     return (
       <div className="text-center py-12">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
-        <p className="mt-4 text-gray-600">Loading users...</p>
+        <div className="animate-spin rounded-full h-12 w-12 border-2 border-foreground/20 border-t-foreground mx-auto"></div>
+        <p className="mt-4 text-foreground/60">Loading users...</p>
       </div>
     );
   }
@@ -114,12 +107,12 @@ export default function AdminUsersPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-3xl font-bold text-gray-100">User Management</h2>
-          <p className="text-gray-400 mt-2">View and manage system users</p>
+          <h2 className="text-3xl font-semibold tracking-tight text-foreground">User Management</h2>
+          <p className="text-foreground/40 mt-2">View and manage system users</p>
         </div>
         <button
           onClick={() => setShowCreateModal(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
+          className="flex items-center gap-2 px-4 py-2 bg-foreground text-background hover:opacity-90 transition"
         >
           <Plus className="w-4 h-4" />
           Create User
@@ -127,33 +120,33 @@ export default function AdminUsersPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <p className="text-sm text-gray-600 mb-1">Total Users</p>
-          <p className="text-3xl font-bold text-gray-900">{roleStats.total}</p>
+        <div className="bg-card border border-border p-6">
+          <p className="text-sm text-foreground/60 mb-1">Total Users</p>
+          <p className="text-3xl font-semibold tracking-tight text-foreground">{roleStats.total}</p>
         </div>
-        <div className="bg-blue-50 rounded-lg border border-blue-200 p-6">
-          <p className="text-sm text-gray-600 mb-1">Complainers</p>
-          <p className="text-3xl font-bold text-blue-600">{roleStats.complainer}</p>
+        <div className="bg-secondary/40 rounded-lg border border-border p-6">
+          <p className="text-sm text-foreground/60 mb-1">Complainers</p>
+          <p className="text-3xl font-semibold tracking-tight text-foreground">{roleStats.complainer}</p>
         </div>
-        <div className="bg-green-50 rounded-lg border border-green-200 p-6">
-          <p className="text-sm text-gray-600 mb-1">Technicians</p>
-          <p className="text-3xl font-bold text-green-600">{roleStats.technician}</p>
+        <div className="bg-secondary/40 rounded-lg border border-border p-6">
+          <p className="text-sm text-foreground/60 mb-1">Technicians</p>
+          <p className="text-3xl font-semibold tracking-tight text-foreground">{roleStats.technician}</p>
         </div>
-        <div className="bg-purple-50 rounded-lg border border-purple-200 p-6">
-          <p className="text-sm text-gray-600 mb-1">Admins</p>
-          <p className="text-3xl font-bold text-purple-600">{roleStats.admin}</p>
+        <div className="bg-secondary/40 rounded-lg border border-border p-6">
+          <p className="text-sm text-foreground/60 mb-1">Admins</p>
+          <p className="text-3xl font-semibold tracking-tight text-foreground">{roleStats.admin}</p>
         </div>
       </div>
 
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
-        <div className="p-6 border-b border-gray-200">
+      <div className="bg-card border border-border">
+        <div className="p-6 border-b border-border">
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => setRoleFilter('all')}
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                 roleFilter === 'all'
-                  ? 'bg-purple-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  ? 'bg-foreground text-background'
+                  : 'bg-secondary text-foreground/80 hover:bg-secondary'
               }`}
             >
               All Users ({users.length})
@@ -162,8 +155,8 @@ export default function AdminUsersPage() {
               onClick={() => setRoleFilter('complainer')}
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                 roleFilter === 'complainer'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  ? 'bg-foreground text-background'
+                  : 'bg-secondary text-foreground/80 hover:bg-secondary'
               }`}
             >
               Complainers ({roleStats.complainer})
@@ -172,8 +165,8 @@ export default function AdminUsersPage() {
               onClick={() => setRoleFilter('technician')}
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                 roleFilter === 'technician'
-                  ? 'bg-green-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  ? 'bg-foreground text-background'
+                  : 'bg-secondary text-foreground/80 hover:bg-secondary'
               }`}
             >
               Technicians ({roleStats.technician})
@@ -182,8 +175,8 @@ export default function AdminUsersPage() {
               onClick={() => setRoleFilter('admin')}
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                 roleFilter === 'admin'
-                  ? 'bg-purple-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  ? 'bg-foreground text-background'
+                  : 'bg-secondary text-foreground/80 hover:bg-secondary'
               }`}
             >
               Admins ({roleStats.admin})
@@ -192,30 +185,30 @@ export default function AdminUsersPage() {
         </div>
 
         {filteredUsers.length === 0 ? (
-          <p className="text-gray-600 p-6 text-center">No users found</p>
+          <p className="text-foreground/60 p-6 text-center">No users found</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-gray-200 bg-gray-50">
-                  <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">Name</th>
-                  <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">Email</th>
-                  <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">Role</th>
-                  <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">Joined</th>
+                <tr className="border-b border-border bg-secondary/40">
+                  <th className="text-left py-3 px-6 text-sm font-semibold text-foreground/80">Name</th>
+                  <th className="text-left py-3 px-6 text-sm font-semibold text-foreground/80">Email</th>
+                  <th className="text-left py-3 px-6 text-sm font-semibold text-foreground/80">Role</th>
+                  <th className="text-left py-3 px-6 text-sm font-semibold text-foreground/80">Joined</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredUsers.map(user => (
-                  <tr key={user.uid} className="border-b border-gray-100 hover:bg-gray-50">
-                    <td className="py-4 px-6 text-sm font-medium text-gray-900">{user.name}</td>
-                    <td className="py-4 px-6 text-sm text-gray-600">{user.email}</td>
+                  <tr key={user.uid} className="border-b border-border hover:bg-secondary/40">
+                    <td className="py-4 px-6 text-sm font-medium text-foreground">{user.name}</td>
+                    <td className="py-4 px-6 text-sm text-foreground/60">{user.email}</td>
                     <td className="py-4 px-6 text-sm">
-                      <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium ${getRoleColor(user.role)}`}>
+                      <span className={`inline-flex items-center gap-1 px-3 py-1 text-xs font-medium ${getRoleColor(user.role)}`}>
                         {getRoleIcon(user.role)}
                         {user.role}
                       </span>
                     </td>
-                    <td className="py-4 px-6 text-sm text-gray-600">
+                    <td className="py-4 px-6 text-sm text-foreground/60">
                       {new Date(user.createdAt).toLocaleDateString()}
                     </td>
                   </tr>
@@ -227,41 +220,41 @@ export default function AdminUsersPage() {
       </div>
 
       {showCreateModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
-            <div className="p-6 border-b border-gray-200">
-              <h3 className="text-xl font-semibold text-gray-900">Create New User</h3>
-              <p className="text-sm text-gray-600 mt-1">Fill in the details to create a new user account</p>
+        <div className="fixed inset-0 bg-foreground/40 flex items-center justify-center p-4 z-50">
+          <div className="bg-card border border-border w-full max-w-md">
+            <div className="p-6 border-b border-border">
+              <h3 className="text-xl font-semibold text-foreground">Create New User</h3>
+              <p className="text-sm text-foreground/60 mt-1">Fill in the details to create a new user account</p>
             </div>
-            <form onSubmit={handleCreateUser} className="p-6 space-y-4 text-gray-600">
+            <form onSubmit={handleCreateUser} className="p-6 space-y-4 text-foreground/60">
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">Full Name</label>
+                <label className="block text-sm font-medium text-foreground/80">Full Name</label>
                 <input
                   type="text"
                   required
                   value={formData.name}
                   onChange={e => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600"
+                  className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-ring"
                   placeholder="John Doe"
                 />
               </div>
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">Email</label>
+                <label className="block text-sm font-medium text-foreground/80">Email</label>
                 <input
                   type="email"
                   required
                   value={formData.email}
                   onChange={e => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600"
+                  className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-ring"
                   placeholder="you@example.com"
                 />
               </div>
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">Role</label>
+                <label className="block text-sm font-medium text-foreground/80">Role</label>
                 <select
                   value={formData.role}
                   onChange={e => setFormData({ ...formData, role: e.target.value as UserRole })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600"
+                  className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-ring"
                 >
                   <option value="complainer">Ticket Creator (Complainer)</option>
                   <option value="technician">Support Technician</option>
@@ -269,24 +262,24 @@ export default function AdminUsersPage() {
                 </select>
               </div>
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">Password</label>
+                <label className="block text-sm font-medium text-foreground/80">Password</label>
                 <input
                   type="password"
                   required
                   value={formData.password}
                   onChange={e => setFormData({ ...formData, password: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600"
+                  className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-ring"
                   placeholder="••••••••"
                 />
               </div>
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">Confirm Password</label>
+                <label className="block text-sm font-medium text-foreground/80">Confirm Password</label>
                 <input
                   type="password"
                   required
                   value={formData.confirmPassword}
                   onChange={e => setFormData({ ...formData, confirmPassword: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600"
+                  className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-ring"
                   placeholder="••••••••"
                 />
               </div>
@@ -294,14 +287,14 @@ export default function AdminUsersPage() {
                 <button
                   type="button"
                   onClick={() => setShowCreateModal(false)}
-                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition"
+                  className="flex-1 px-4 py-2 border border-border text-foreground/80 rounded-lg hover:bg-secondary/40 transition"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={createLoading}
-                  className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition disabled:opacity-50"
+                  className="flex-1 px-4 py-2 bg-foreground text-background hover:opacity-90 transition disabled:opacity-50"
                 >
                   {createLoading ? 'Creating...' : 'Create User'}
                 </button>

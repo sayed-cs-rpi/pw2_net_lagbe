@@ -7,13 +7,12 @@ import { Ticket } from '@/lib/types';
 import { TicketCard } from '@/components/ticket-card';
 import Link from 'next/link';
 import { Plus, AlertCircle } from 'lucide-react';
+import { pageTitleClass, pageSubClass, primaryBtnClass, cardClass } from '@/components/app-shell';
 
 export default function ComplainerPage() {
   const { user } = useAuth();
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
-  console.log(tickets)
-  console.log(tickets)
 
   useEffect(() => {
     async function fetchTickets() {
@@ -27,49 +26,42 @@ export default function ComplainerPage() {
         setLoading(false);
       }
     }
-
     fetchTickets();
   }, [user]);
 
   if (loading) {
     return (
-      <div className="text-center py-12">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-        <p className="mt-4 text-gray-600">Loading your tickets...</p>
+      <div className="text-center py-16">
+        <div className="animate-spin rounded-full h-10 w-10 border-2 border-foreground/20 border-t-foreground mx-auto" />
+        <p className="mt-4 text-foreground/60 text-sm">Loading your tickets...</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-8">
+      <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <h2 className="text-3xl font-bold text-gray-900">My Tickets</h2>
-          <p className="text-gray-600 mt-2">Track and manage your support requests</p>
+          <h2 className={pageTitleClass}>My Tickets</h2>
+          <p className={pageSubClass}>Track and manage your support requests</p>
         </div>
-        <Link
-          href="/complainer/create"
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg transition-colors"
-        >
-          <Plus className="w-5 h-5" />
+        <Link href="/complainer/create" className={`inline-flex items-center gap-2 ${primaryBtnClass}`}>
+          <Plus className="w-4 h-4" />
           New Ticket
         </Link>
       </div>
 
       {tickets.length === 0 ? (
-        <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
-          <AlertCircle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <p className="text-gray-600 mb-4">You haven&apos;t created any tickets yet.</p>
-          <Link
-            href="/complainer/create"
-            className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded-lg transition-colors"
-          >
+        <div className={`${cardClass} text-center`}>
+          <AlertCircle className="w-10 h-10 text-foreground/30 mx-auto mb-4" />
+          <p className="text-foreground/60 mb-6">You haven&apos;t created any tickets yet.</p>
+          <Link href="/complainer/create" className={`inline-flex items-center gap-2 ${primaryBtnClass}`}>
             <Plus className="w-4 h-4" />
             Create Your First Ticket
           </Link>
         </div>
       ) : (
-        <div className="grid gap-4">
+        <div className="grid gap-3">
           {tickets.map(ticket => (
             <TicketCard key={ticket.id} ticket={ticket} />
           ))}
@@ -77,23 +69,20 @@ export default function ComplainerPage() {
       )}
 
       {tickets.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8 pt-8 border-t border-gray-200">
-          <div className="bg-white p-4 rounded-lg border border-gray-200">
-            <p className="text-sm text-gray-600">Total Tickets</p>
-            <p className="text-3xl font-bold text-gray-900 mt-1">{tickets.length}</p>
-          </div>
-          <div className="bg-white p-4 rounded-lg border border-gray-200">
-            <p className="text-sm text-gray-600">Open</p>
-            <p className="text-3xl font-bold text-blue-600 mt-1">
-              {tickets.filter(t => t.status === 'open').length}
-            </p>
-          </div>
-          <div className="bg-white p-4 rounded-lg border border-gray-200">
-            <p className="text-sm text-gray-600">Resolved</p>
-            <p className="text-3xl font-bold text-green-600 mt-1">
-              {tickets.filter(t => t.status === 'resolved' || t.status === 'closed').length}
-            </p>
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-6 border-t border-border">
+          {[
+            { label: 'Total', value: tickets.length },
+            { label: 'Open', value: tickets.filter(t => t.status === 'open').length },
+            {
+              label: 'Resolved',
+              value: tickets.filter(t => t.status === 'resolved' || t.status === 'closed').length,
+            },
+          ].map(stat => (
+            <div key={stat.label} className="bg-card border border-border p-5">
+              <p className="text-sm text-foreground/60">{stat.label}</p>
+              <p className="text-3xl font-semibold tracking-tight mt-1">{stat.value}</p>
+            </div>
+          ))}
         </div>
       )}
     </div>

@@ -8,11 +8,11 @@ const badgeVariants = cva(
       variant: {
         default: 'bg-secondary text-foreground',
         primary: 'bg-foreground text-background',
-        success: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100',
-        warning: 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-100',
-        danger: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100',
-        critical: 'bg-red-200 text-red-900 dark:bg-red-800 dark:text-red-100',
-        outline: 'border border-border text-foreground',
+        success: 'bg-secondary text-foreground/80',
+        warning: 'border border-border bg-input text-foreground',
+        danger: 'bg-destructive/10 text-destructive',
+        critical: 'bg-destructive/15 text-destructive font-semibold',
+        outline: 'border border-border text-foreground/70',
       },
     },
     defaultVariants: {

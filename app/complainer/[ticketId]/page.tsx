@@ -78,17 +78,17 @@ export default function TicketDetailPage({ params }: { params: { ticketId: strin
   if (loading) {
     return (
       <div className="text-center py-12">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-        <p className="mt-4 text-gray-600">Loading ticket...</p>
+        <div className="animate-spin rounded-full h-12 w-12 border-2 border-foreground/20 border-t-foreground mx-auto"></div>
+        <p className="mt-4 text-foreground/60">Loading ticket...</p>
       </div>
     );
   }
 
   if (!ticket) {
     return (
-      <div className="bg-white rounded-lg border border-gray-200 p-8 text-center">
-        <p className="text-gray-600 mb-4">Ticket not found</p>
-        <Link href="/complainer" className="text-blue-600 hover:text-blue-700">
+      <div className="bg-card border border-border p-8 text-center">
+        <p className="text-foreground/60 mb-4">Ticket not found</p>
+        <Link href="/complainer" className="text-foreground hover:opacity-70">
           Back to Tickets
         </Link>
       </div>
@@ -97,16 +97,16 @@ export default function TicketDetailPage({ params }: { params: { ticketId: strin
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      <Link href="/complainer" className="flex items-center gap-2 text-blue-600 hover:text-blue-700">
+      <Link href="/complainer" className="flex items-center gap-2 text-foreground hover:opacity-70">
         <ArrowLeft className="w-4 h-4" />
         Back to Tickets
       </Link>
 
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-8">
+      <div className="bg-card border border-border p-8">
         <div className="flex items-start justify-between mb-6">
           <div className="flex-1">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">{ticket.title}</h1>
-            <p className="text-gray-600">#{ticket.id.substring(0, 8)}</p>
+            <h1 className="text-3xl font-semibold tracking-tight text-foreground mb-2">{ticket.title}</h1>
+            <p className="text-foreground/60">#{ticket.id.substring(0, 8)}</p>
           </div>
           <div className="flex gap-2">
             <StatusBadge status={ticket.status} />
@@ -114,46 +114,46 @@ export default function TicketDetailPage({ params }: { params: { ticketId: strin
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 pb-8 border-b border-gray-200">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 pb-8 border-b border-border">
           <div>
-            <p className="text-sm text-gray-600 mb-1">Category</p>
-            <p className="text-lg font-medium text-gray-900">{ticket.category}</p>
+            <p className="text-sm text-foreground/60 mb-1">Category</p>
+            <p className="text-lg font-medium text-foreground">{ticket.category}</p>
           </div>
           <div>
-            <p className="text-sm text-gray-600 mb-1">Created</p>
-            <p className="text-lg font-medium text-gray-900">{format(ticket.createdAt, 'MMM dd, yyyy HH:mm')}</p>
+            <p className="text-sm text-foreground/60 mb-1">Created</p>
+            <p className="text-lg font-medium text-foreground">{format(ticket.createdAt, 'MMM dd, yyyy HH:mm')}</p>
           </div>
           {ticket.assignedToName && (
             <div>
-              <p className="text-sm text-gray-600 mb-1">Assigned To</p>
-              <p className="text-lg font-medium text-gray-900">{ticket.assignedToName}</p>
+              <p className="text-sm text-foreground/60 mb-1">Assigned To</p>
+              <p className="text-lg font-medium text-foreground">{ticket.assignedToName}</p>
             </div>
           )}
           {ticket.roomName && (
             <div>
-              <p className="text-sm text-gray-600 mb-1">Room</p>
-              <p className="text-lg font-medium text-gray-900">{ticket.roomName}</p>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-foreground/60 mb-1">Room</p>
+              <p className="text-lg font-medium text-foreground">{ticket.roomName}</p>
+              <p className="text-sm text-foreground/60">
                 {ticket.roomBuilding} · Floor {ticket.roomFloor} · #{ticket.roomNumber}
               </p>
             </div>
           )}
           {ticket.resolvedAt && (
             <div>
-              <p className="text-sm text-gray-600 mb-1">Resolved</p>
-              <p className="text-lg font-medium text-gray-900">{format(ticket.resolvedAt, 'MMM dd, yyyy HH:mm')}</p>
+              <p className="text-sm text-foreground/60 mb-1">Resolved</p>
+              <p className="text-lg font-medium text-foreground">{format(ticket.resolvedAt, 'MMM dd, yyyy HH:mm')}</p>
             </div>
           )}
         </div>
 
         <div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-3">Description</h3>
-          <p className="text-gray-600 whitespace-pre-wrap">{ticket.description}</p>
+          <h3 className="text-lg font-semibold text-foreground mb-3">Description</h3>
+          <p className="text-foreground/60 whitespace-pre-wrap">{ticket.description}</p>
         </div>
       </div>
 
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-8">
-        <h3 className="text-lg font-semibold text-gray-900 mb-6">Messages ({messages.length})</h3>
+      <div className="bg-card border border-border p-8">
+        <h3 className="text-lg font-semibold text-foreground mb-6">Messages ({messages.length})</h3>
 
         <div className="space-y-4 mb-6 max-h-96 overflow-y-auto">
           {messages.map(message => (
@@ -161,15 +161,15 @@ export default function TicketDetailPage({ params }: { params: { ticketId: strin
               key={message.id}
               className={`p-4 rounded-lg ${
                 message.userId === user?.uid
-                  ? 'bg-blue-50 border border-blue-200 ml-8'
-                  : 'bg-gray-50 border border-gray-200 mr-8'
+                  ? 'bg-secondary/40 border border-border ml-8'
+                  : 'bg-secondary/40 border border-border mr-8'
               }`}
             >
               <div className="flex items-center justify-between mb-2">
-                <p className="font-medium text-gray-900">{message.userName}</p>
-                <p className="text-xs text-gray-600">{format(message.createdAt, 'MMM dd, HH:mm')}</p>
+                <p className="font-medium text-foreground">{message.userName}</p>
+                <p className="text-xs text-foreground/60">{format(message.createdAt, 'MMM dd, HH:mm')}</p>
               </div>
-              <p className="text-gray-700">{message.message}</p>
+              <p className="text-foreground/80">{message.message}</p>
             </div>
           ))}
         </div>
@@ -180,12 +180,12 @@ export default function TicketDetailPage({ params }: { params: { ticketId: strin
             value={messageText}
             onChange={e => setMessageText(e.target.value)}
             placeholder="Type your message..."
-            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="flex-1 px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent"
           />
           <button
             type="submit"
             disabled={sending || !messageText.trim()}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded-lg transition-colors flex items-center gap-2 disabled:opacity-50"
+            className="bg-foreground text-background hover:opacity-90 font-semibold px-6 py-2 rounded-lg transition-colors flex items-center gap-2 disabled:opacity-50"
           >
             <Send className="w-4 h-4" />
             Send

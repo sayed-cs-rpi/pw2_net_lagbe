@@ -46,8 +46,8 @@ export default function AdminTicketsPage() {
   if (loading) {
     return (
       <div className="text-center py-12">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
-        <p className="mt-4 text-gray-600">Loading tickets...</p>
+        <div className="animate-spin rounded-full h-12 w-12 border-2 border-foreground/20 border-t-foreground mx-auto"></div>
+        <p className="mt-4 text-foreground/60">Loading tickets...</p>
       </div>
     );
   }
@@ -55,17 +55,17 @@ export default function AdminTicketsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-3xl font-bold text-gray-900">All Tickets</h2>
-        <p className="text-gray-600 mt-2">Manage and monitor all support tickets</p>
+        <h2 className="text-3xl font-semibold tracking-tight text-foreground">All Tickets</h2>
+        <p className="text-foreground/60 mt-2">Manage and monitor all support tickets</p>
       </div>
 
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6 space-y-4">
+      <div className="bg-card border border-border p-6 space-y-4">
         <input
           type="text"
           placeholder="Search by title, complainer name, or email..."
           value={searchTerm}
           onChange={e => setSearchTerm(e.target.value)}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+          className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent"
         />
 
         <div className="flex flex-wrap gap-2">
@@ -74,8 +74,8 @@ export default function AdminTicketsPage() {
               onClick={() => setStatusFilter('all')}
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                 statusFilter === 'all'
-                  ? 'bg-purple-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  ? 'bg-foreground text-background'
+                  : 'bg-secondary text-foreground/80 hover:bg-secondary'
               }`}
             >
               All Status
@@ -86,8 +86,8 @@ export default function AdminTicketsPage() {
                 onClick={() => setStatusFilter(status)}
                 className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                   statusFilter === status
-                    ? 'bg-purple-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    ? 'bg-foreground text-background'
+                    : 'bg-secondary text-foreground/80 hover:bg-secondary'
                 }`}
               >
                 {status.replace('_', ' ')}
@@ -102,8 +102,8 @@ export default function AdminTicketsPage() {
               onClick={() => setPriorityFilter('all')}
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                 priorityFilter === 'all'
-                  ? 'bg-purple-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  ? 'bg-foreground text-background'
+                  : 'bg-secondary text-foreground/80 hover:bg-secondary'
               }`}
             >
               All Priority
@@ -114,8 +114,8 @@ export default function AdminTicketsPage() {
                 onClick={() => setPriorityFilter(priority)}
                 className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                   priorityFilter === priority
-                    ? 'bg-purple-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    ? 'bg-foreground text-background'
+                    : 'bg-secondary text-foreground/80 hover:bg-secondary'
                 }`}
               >
                 {priority}
@@ -126,15 +126,15 @@ export default function AdminTicketsPage() {
       </div>
 
       {filteredTickets.length === 0 ? (
-        <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
-          <p className="text-gray-600 mb-2 text-lg">No tickets found</p>
-          <p className="text-gray-600">Try adjusting your filters or search term.</p>
+        <div className="bg-card border border-border p-12 text-center">
+          <p className="text-foreground/60 mb-2 text-lg">No tickets found</p>
+          <p className="text-foreground/60">Try adjusting your filters or search term.</p>
         </div>
       ) : (
         <div className="space-y-4">
-          <p className="text-sm text-gray-600">
-            Showing <span className="font-semibold text-gray-900">{filteredTickets.length}</span> of{' '}
-            <span className="font-semibold text-gray-900">{tickets.length}</span> tickets
+          <p className="text-sm text-foreground/60">
+            Showing <span className="font-semibold text-foreground">{filteredTickets.length}</span> of{' '}
+            <span className="font-semibold text-foreground">{tickets.length}</span> tickets
           </p>
           {filteredTickets.map(ticket => (
             <Link key={ticket.id} href={`/tickets/${ticket.id}`}>
