@@ -7,14 +7,14 @@ import { SetupCheck } from '@/components/setup-check'
 import { ServiceWorkerRegistration } from '@/components/service-worker-registration'
 
 export const metadata: Metadata = {
-  title: 'Support Ticket System',
+  title: 'Ticket Based Internet Issue Management For RGPI',
   description: 'Enterprise support ticket management system',
   generator: 'v0.app',
   manifest: '/manifest.webmanifest',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'Tickets',
+    title: 'Ticket Based Internet Issue Management For RGPI',
   },
   icons: {
     icon: [
@@ -60,6 +60,10 @@ export default function RootLayout({
           <Toaster position="top-right" />
         </AuthProvider>
         {process.env.NODE_ENV === 'production' && <Analytics />}
+        <footer className="bg-secondary/5 p-4 text-center text-xs text-foreground/50">
+          <p className="mb-1">Copyright &copy; {new Date().getFullYear()} absyd. All Rights Reserved.</p>
+          <p>A ticket-based internet issue management system for RGPI.</p>
+        </footer>
       </body>
     </html>
   )

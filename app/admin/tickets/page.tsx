@@ -72,7 +72,7 @@ export default function AdminTicketsPage() {
           <div>
             <button
               onClick={() => setStatusFilter('all')}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              className={`px-4 py-2 rounded-lg font-medium transition-colors me-2 ${
                 statusFilter === 'all'
                   ? 'bg-foreground text-background'
                   : 'bg-secondary text-foreground/80 hover:bg-secondary'
@@ -84,7 +84,7 @@ export default function AdminTicketsPage() {
               <button
                 key={status}
                 onClick={() => setStatusFilter(status)}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                className={`px-4 py-2 rounded-lg font-medium transition-colors me-2 ${
                   statusFilter === status
                     ? 'bg-foreground text-background'
                     : 'bg-secondary text-foreground/80 hover:bg-secondary'
@@ -100,7 +100,7 @@ export default function AdminTicketsPage() {
           <div>
             <button
               onClick={() => setPriorityFilter('all')}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              className={`px-4 py-2 rounded-lg font-medium transition-colors me-2 ${
                 priorityFilter === 'all'
                   ? 'bg-foreground text-background'
                   : 'bg-secondary text-foreground/80 hover:bg-secondary'
@@ -112,7 +112,7 @@ export default function AdminTicketsPage() {
               <button
                 key={priority}
                 onClick={() => setPriorityFilter(priority)}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                className={`px-4 py-2 rounded-lg font-medium transition-colors me-2 ${
                   priorityFilter === priority
                     ? 'bg-foreground text-background'
                     : 'bg-secondary text-foreground/80 hover:bg-secondary'

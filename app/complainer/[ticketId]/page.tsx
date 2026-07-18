@@ -18,7 +18,8 @@ export default function TicketDetailPage({ params }: { params: { ticketId: strin
   const [messageText, setMessageText] = useState('');
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
-
+  console.log(ticket)
+  
   useEffect(() => {
     async function loadTicket() {
       try {
