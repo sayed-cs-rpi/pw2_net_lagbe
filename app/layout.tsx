@@ -53,6 +53,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="bg-background">
       <body className="antialiased">
+        {/* <Analytics /> */}
         <SetupCheck />
         <ServiceWorkerRegistration />
         <AuthProvider>
