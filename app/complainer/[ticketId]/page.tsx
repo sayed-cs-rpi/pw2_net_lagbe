@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/lib/auth-context';
-import { getTicket, getTicketMessages, addTicketMessage, updateTicket } from '@/lib/firestore-service';
-import { sendTicketMessageNotification } from '@/lib/notifications';
+import { subscribeToTicket, subscribeToTicketMessages, addTicketMessage } from '@/lib/firestore-service';
 import { Ticket, TicketMessage } from '@/lib/types';
 import { StatusBadge, PriorityBadge } from '@/components/status-badge';
 import { format } from 'date-fns';
@@ -18,28 +17,26 @@ export default function TicketDetailPage({ params }: { params: { ticketId: strin
   const [messageText, setMessageText] = useState('');
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
-  console.log(ticket)
-  
+
   useEffect(() => {
-    async function loadTicket() {
-      try {
-        const ticketData = await getTicket(params?.ticketId);
-        if (ticketData && ticketData.complainerId === user?.uid) {
-          setTicket(ticketData);
-          const messagesData = await getTicketMessages(params?.ticketId);
-          setMessages(messagesData);
-        }
-      } catch (error) {
-        console.error('[v0] Error loading ticket:', error);
-        toast.error('Failed to load ticket');
-      } finally {
+    if (!user?.uid || !params?.ticketId) return;
+
+    const unsubTicket = subscribeToTicket(params.ticketId, ticketData => {
+      if (ticketData && ticketData.complainerId === user.uid) {
+        setTicket(ticketData);
+        setLoading(false);
+      } else if (ticketData === null) {
+        setTicket(null);
         setLoading(false);
       }
-    }
+    });
 
-    if (user?.uid) {
-      loadTicket();
-    }
+    const unsubMessages = subscribeToTicketMessages(params.ticketId, setMessages);
+
+    return () => {
+      unsubTicket();
+      unsubMessages();
+    };
   }, [params?.ticketId, user?.uid]);
 
   async function handleSendMessage(e: React.FormEvent) {
@@ -59,14 +56,7 @@ export default function TicketDetailPage({ params }: { params: { ticketId: strin
         isInternal: false,
       });
 
-      // Send notification to the assigned technician
-      if (ticket.assignedToId) {
-        await sendTicketMessageNotification(ticket, user.name, ticket.assignedToId);
-      }
-
       setMessageText('');
-      const updatedMessages = await getTicketMessages(ticket.id);
-      setMessages(updatedMessages);
       toast.success('Message sent!');
     } catch (error) {
       console.error('[v0] Error sending message:', error);

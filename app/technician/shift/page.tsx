@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/lib/auth-context';
-import { createShift, getActiveShifts, updateShift } from '@/lib/firestore-service';
+import { createShift, subscribeToActiveShifts, updateShift } from '@/lib/firestore-service';
 import { Shift } from '@/lib/types';
 import toast from 'react-hot-toast';
 import { Clock, LogIn, LogOut } from 'lucide-react';
@@ -16,23 +16,16 @@ export default function TechnicianShiftPage() {
   const [activeShift, setActiveShift] = useState<Shift | null>(null);
 
   useEffect(() => {
-    async function fetchShifts() {
-      try {
-        const data = await getActiveShifts();
-        setShifts(data);
-        const myShift = data.find(s => s.technicianId === user?.uid && s.isActive);
-        setActiveShift(myShift || null);
-      } catch (error) {
-        console.error('[v0] Error fetching shifts:', error);
-        toast.error('Failed to load shifts');
-      } finally {
-        setLoading(false);
-      }
-    }
+    if (!user?.uid) return;
 
-    if (user?.uid) {
-      fetchShifts();
-    }
+    const unsubscribe = subscribeToActiveShifts(data => {
+      setShifts(data);
+      const myShift = data.find(s => s.technicianId === user.uid && s.isActive);
+      setActiveShift(myShift || null);
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
   }, [user?.uid]);
 
   async function handleStartShift() {

@@ -6,9 +6,9 @@ import { AlertCircle, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth-context';
 import { useEffect, useState } from 'react';
-import { getUnassignedTickets, assignTicket } from '@/lib/firestore-service';
-import { sendTicketAssignmentNotification } from '@/lib/notifications';
+import { subscribeToTickets, assignTicket } from '@/lib/firestore-service';
 import { Ticket } from '@/lib/types';
+import { orderBy, where } from 'firebase/firestore';
 
 export default function TechnicianQueuePage() {
   const { user } = useAuth();
@@ -17,19 +17,15 @@ export default function TechnicianQueuePage() {
   const [assigning, setAssigning] = useState<string | null>(null);
 
   useEffect(() => {
-    async function fetchTickets() {
-      try {
-        const data = await getUnassignedTickets();
-        setTickets(data);
-      } catch (error) {
-        console.error('[v0] Error fetching tickets:', error);
-        toast.error('Failed to load tickets');
-      } finally {
+    const unsubscribe = subscribeToTickets(
+      [where('status', '==', 'open'), orderBy('createdAt', 'desc')],
+      openTickets => {
+        setTickets(openTickets.filter(t => !t.assignedToId));
         setLoading(false);
       }
-    }
+    );
 
-    fetchTickets();
+    return () => unsubscribe();
   }, []);
 
   async function handleAssignTicket(ticket: Ticket) {
@@ -42,17 +38,6 @@ export default function TechnicianQueuePage() {
     setAssigning(ticket.id);
     try {
       await assignTicket(ticket.id, user.uid, user.name);
-
-      const updatedTicket = {
-        ...ticket,
-        assignedToId: user.uid,
-        assignedToName: user.name,
-        status: 'assigned' as const,
-      };
-
-      await sendTicketAssignmentNotification(updatedTicket);
-
-      setTickets(tickets.filter(t => t.id !== ticket.id));
       toast.success(`Ticket #${ticket.id.substring(0, 8)} assigned to you!`);
     } catch (error) {
       console.error('[v0] Error assigning ticket:', error);

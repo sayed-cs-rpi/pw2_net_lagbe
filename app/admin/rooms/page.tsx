@@ -6,7 +6,7 @@ import {
   createRoom,
   updateRoom,
   deleteRoom,
-  getRooms,
+  subscribeToRooms,
   getUsersByRole,
   countActiveTicketsForRoom,
 } from '@/lib/firestore-service';
@@ -33,24 +33,20 @@ export default function AdminRoomsPage() {
   const [editing, setEditing] = useState<Room | null>(null);
   const [formData, setFormData] = useState(emptyForm);
 
-  async function loadData() {
-    try {
-      const [roomsData, complainersData] = await Promise.all([
-        getRooms(),
-        getUsersByRole('complainer'),
-      ]);
-      setRooms(roomsData);
-      setComplainers(complainersData);
-    } catch (error) {
-      console.error('[v0] Error loading rooms:', error);
-      toast.error('Failed to load rooms');
-    } finally {
-      setLoading(false);
-    }
-  }
-
   useEffect(() => {
-    loadData();
+    getUsersByRole('complainer')
+      .then(setComplainers)
+      .catch(error => {
+        console.error('[v0] Error loading complainers:', error);
+        toast.error('Failed to load complainers');
+      });
+
+    const unsubscribe = subscribeToRooms(roomsData => {
+      setRooms(roomsData);
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
   }, []);
 
   function openCreate() {
@@ -118,7 +114,6 @@ export default function AdminRoomsPage() {
       setShowModal(false);
       setEditing(null);
       setFormData(emptyForm);
-      await loadData();
     } catch (error) {
       console.error('[v0] Error saving room:', error);
       toast.error('Failed to save room');

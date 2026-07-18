@@ -5,6 +5,8 @@ import { AuthProvider } from '@/lib/auth-context'
 import { Toaster } from 'react-hot-toast'
 import { SetupCheck } from '@/components/setup-check'
 import { ServiceWorkerRegistration } from '@/components/service-worker-registration'
+import { RealtimeProvider } from '@/components/realtime-provider'
+import { ForegroundMessageHandler } from '@/components/foreground-message-handler'
 
 export const metadata: Metadata = {
   title: 'Ticket Based Internet Issue Management For RGPI',
@@ -57,7 +59,10 @@ export default function RootLayout({
         <SetupCheck />
         <ServiceWorkerRegistration />
         <AuthProvider>
-          {children}
+          <RealtimeProvider>
+            <ForegroundMessageHandler />
+            {children}
+          </RealtimeProvider>
           <Toaster position="top-right" />
         </AuthProvider>
         {process.env.NODE_ENV === 'production' && <Analytics />}

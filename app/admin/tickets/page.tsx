@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getTickets } from '@/lib/firestore-service';
+import { subscribeToTickets } from '@/lib/firestore-service';
 import { Ticket, TicketStatus, TicketPriority } from '@/lib/types';
 import { TicketCard } from '@/components/ticket-card';
 import Link from 'next/link';
@@ -18,18 +18,12 @@ export default function AdminTicketsPage() {
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
-    async function fetchTickets() {
-      try {
-        const data = await getTickets([orderBy('createdAt', 'desc')]);
-        setTickets(data);
-      } catch (error) {
-        console.error('[v0] Error fetching tickets:', error);
-      } finally {
-        setLoading(false);
-      }
-    }
+    const unsubscribe = subscribeToTickets([orderBy('createdAt', 'desc')], data => {
+      setTickets(data);
+      setLoading(false);
+    });
 
-    fetchTickets();
+    return () => unsubscribe();
   }, []);
 
   const filteredTickets = tickets.filter(ticket => {

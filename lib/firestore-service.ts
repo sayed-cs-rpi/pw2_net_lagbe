@@ -122,6 +122,20 @@ export function subscribeToTickets(
   });
 }
 
+export function subscribeToTicket(
+  ticketId: string,
+  onUpdate: (ticket: Ticket | null) => void
+): Unsubscribe {
+  const docRef = doc(getDbInstance(), 'tickets', ticketId);
+  return onSnapshot(docRef, docSnap => {
+    if (docSnap.exists()) {
+      onUpdate(mapTicketDoc(docSnap.id, docSnap.data() as Record<string, unknown>));
+    } else {
+      onUpdate(null);
+    }
+  });
+}
+
 export async function updateTicket(ticketId: string, updates: Partial<Ticket>) {
   const ticketRef = doc(getDbInstance(), 'tickets', ticketId);
   const payload: Record<string, unknown> = {
@@ -170,6 +184,15 @@ export async function getRooms() {
   const q = query(collection(getDbInstance(), 'rooms'), orderBy('createdAt', 'desc'));
   const querySnapshot = await getDocs(q);
   return querySnapshot.docs.map(d => mapRoomDoc(d.id, d.data() as Record<string, unknown>));
+}
+
+export function subscribeToRooms(onUpdate: (rooms: Room[]) => void): Unsubscribe {
+  const q = query(collection(getDbInstance(), 'rooms'), orderBy('createdAt', 'desc'));
+  return onSnapshot(q, querySnapshot => {
+    onUpdate(
+      querySnapshot.docs.map(d => mapRoomDoc(d.id, d.data() as Record<string, unknown>))
+    );
+  });
 }
 
 export async function getRoomsByOwner(ownerId: string) {
@@ -275,17 +298,32 @@ export async function createShift(shift: Omit<Shift, 'id' | 'createdAt' | 'updat
   return shiftRef.id;
 }
 
+function mapShiftDoc(id: string, data: Record<string, unknown>): Shift {
+  return {
+    id,
+    ...data,
+    startTime: (data.startTime as { toDate?: () => Date })?.toDate?.() || new Date(),
+    endTime: (data.endTime as { toDate?: () => Date })?.toDate?.() || new Date(),
+    createdAt: (data.createdAt as { toDate?: () => Date })?.toDate?.() || new Date(),
+    updatedAt: (data.updatedAt as { toDate?: () => Date })?.toDate?.() || new Date(),
+  } as Shift;
+}
+
 export async function getActiveShifts() {
   const q = query(collection(getDbInstance(), 'shifts'), where('isActive', '==', true));
   const querySnapshot = await getDocs(q);
-  return querySnapshot.docs.map(doc => ({
-    id: doc.id,
-    ...doc.data(),
-    startTime: doc.data().startTime?.toDate?.() || new Date(),
-    endTime: doc.data().endTime?.toDate?.() || new Date(),
-    createdAt: doc.data().createdAt?.toDate?.() || new Date(),
-    updatedAt: doc.data().updatedAt?.toDate?.() || new Date(),
-  })) as Shift[];
+  return querySnapshot.docs.map(d =>
+    mapShiftDoc(d.id, d.data() as Record<string, unknown>)
+  );
+}
+
+export function subscribeToActiveShifts(onUpdate: (shifts: Shift[]) => void): Unsubscribe {
+  const q = query(collection(getDbInstance(), 'shifts'), where('isActive', '==', true));
+  return onSnapshot(q, querySnapshot => {
+    onUpdate(
+      querySnapshot.docs.map(d => mapShiftDoc(d.id, d.data() as Record<string, unknown>))
+    );
+  });
 }
 
 export async function updateShift(shiftId: string, updates: Partial<Shift>) {

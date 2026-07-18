@@ -3,14 +3,20 @@ import { messaging, auth } from './firebase';
 import { doc, getDoc, collection, getDocs, query, where } from 'firebase/firestore';
 import { getDbInstance } from './firebase';
 import { Ticket, User } from './types';
+import toast from 'react-hot-toast';
 
-interface NotificationPayload {
+export interface NotificationPayload {
   title: string;
   body: string;
   data?: {
     ticketId?: string;
     type: 'assignment' | 'status_update' | 'message' | 'ticket_created';
   };
+}
+
+export function showNotificationToast(payload: NotificationPayload): void {
+  if (typeof window === 'undefined') return;
+  toast(`${payload.title}: ${payload.body}`, { duration: 6000, icon: '🔔' });
 }
 
 // Send notification to a specific user via their FCM token
@@ -54,6 +60,8 @@ export async function sendNotificationToUser(
         data: payload.data,
       });
     }
+
+    showNotificationToast(payload);
 
     return true;
   } catch (error) {

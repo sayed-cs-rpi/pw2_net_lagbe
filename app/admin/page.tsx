@@ -1,9 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getTicketStats, getTickets } from '@/lib/firestore-service';
+import { subscribeToTickets } from '@/lib/firestore-service';
 import { Ticket } from '@/lib/types';
-import { Ticket as TicketIcon, TrendingUp, AlertCircle, CheckCircle, Clock } from 'lucide-react';
+import { Ticket as TicketIcon, AlertCircle, CheckCircle, Clock } from 'lucide-react';
 import { orderBy } from 'firebase/firestore';
 
 export default function AdminDashboard() {
@@ -19,28 +19,20 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchData() {
-      try {
-        const statsData = await getTicketStats();
-        setStats({
-          total: statsData.total,
-          open: statsData.open,
-          assigned: statsData.assigned,
-          inProgress: statsData.inProgress,
-          resolved: statsData.resolved,
-          closed: statsData.closed,
-        });
+    const unsubscribe = subscribeToTickets([orderBy('createdAt', 'desc')], allTickets => {
+      setStats({
+        total: allTickets.length,
+        open: allTickets.filter(t => t.status === 'open').length,
+        assigned: allTickets.filter(t => t.status === 'assigned').length,
+        inProgress: allTickets.filter(t => t.status === 'in_progress').length,
+        resolved: allTickets.filter(t => t.status === 'resolved').length,
+        closed: allTickets.filter(t => t.status === 'closed').length,
+      });
+      setTickets(allTickets.slice(0, 10));
+      setLoading(false);
+    });
 
-        const recentTickets = await getTickets([orderBy('createdAt', 'desc')]);
-        setTickets(recentTickets.slice(0, 10));
-      } catch (error) {
-        console.error('[v0] Error fetching data:', error);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchData();
+    return () => unsubscribe();
   }, []);
 
   if (loading) {

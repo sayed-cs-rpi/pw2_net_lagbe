@@ -3,18 +3,13 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import {
-  getTicket,
-  getTicketMessages,
+  subscribeToTicket,
+  subscribeToTicketMessages,
   addTicketMessage,
   updateTicket,
   assignTicket,
   getUsersByRole,
 } from '@/lib/firestore-service';
-import {
-  sendTicketStatusNotification,
-  sendTicketMessageNotification,
-  sendTicketAssignmentNotification,
-} from '@/lib/notifications';
 import { Ticket, TicketMessage, TicketStatus, User } from '@/lib/types';
 import { StatusBadge, PriorityBadge } from '@/components/status-badge';
 import { format } from 'date-fns';
@@ -53,40 +48,39 @@ export default function TicketDetailPage({
   }, [params]);
 
   useEffect(() => {
-    async function loadTicket() {
-      if (!ticketId || !user?.uid) return;
-      try {
-        const ticketData = await getTicket(ticketId);
-        if (ticketData) {
-          const isComplainer = ticketData.complainerId === user?.uid;
-          const isTechnician = ticketData.assignedToId === user?.uid;
-          const isAdmin = user?.role === 'admin';
+    if (!ticketId || !user?.uid) return;
 
-          if (!isComplainer && !isTechnician && !isAdmin) {
-            toast.error('You do not have access to this ticket');
-            router.push('/');
-            return;
-          }
+    const unsubTicket = subscribeToTicket(ticketId, ticketData => {
+      if (ticketData) {
+        const isComplainer = ticketData.complainerId === user.uid;
+        const isTechnician = ticketData.assignedToId === user.uid;
+        const isAdmin = user.role === 'admin';
 
-          setTicket(ticketData);
-          setSelectedTechId(ticketData.assignedToId || '');
-          const messagesData = await getTicketMessages(ticketId);
-          setMessages(messagesData);
-
-          if (isAdmin) {
-            const techs = await getUsersByRole('technician');
-            setTechnicians(techs);
-          }
+        if (!isComplainer && !isTechnician && !isAdmin) {
+          toast.error('You do not have access to this ticket');
+          router.push('/');
+          return;
         }
-      } catch (error) {
-        console.error('[v0] Error loading ticket:', error);
-        toast.error('Failed to load ticket');
-      } finally {
+
+        setTicket(ticketData);
+        setSelectedTechId(ticketData.assignedToId || '');
+        setLoading(false);
+      } else {
+        setTicket(null);
         setLoading(false);
       }
+    });
+
+    const unsubMessages = subscribeToTicketMessages(ticketId, setMessages);
+
+    if (user.role === 'admin') {
+      getUsersByRole('technician').then(setTechnicians);
     }
 
-    loadTicket();
+    return () => {
+      unsubTicket();
+      unsubMessages();
+    };
   }, [ticketId, user?.uid, user?.role, router]);
 
   async function handleSendMessage(e: React.FormEvent) {
@@ -106,20 +100,7 @@ export default function TicketDetailPage({
         isInternal: user.role === 'technician' || user.role === 'admin',
       });
 
-      let recipientId: string | undefined;
-      if (user.role === 'complainer' && ticket.assignedToId) {
-        recipientId = ticket.assignedToId;
-      } else if (user.role !== 'complainer' && ticket.complainerId !== user.uid) {
-        recipientId = ticket.complainerId;
-      }
-
-      if (recipientId) {
-        await sendTicketMessageNotification(ticket, user.name, recipientId);
-      }
-
       setMessageText('');
-      const updatedMessages = await getTicketMessages(ticket.id);
-      setMessages(updatedMessages);
       toast.success('Message sent!');
     } catch (error) {
       console.error('[v0] Error sending message:', error);
@@ -132,13 +113,8 @@ export default function TicketDetailPage({
   async function handleStatusChange(newStatus: TicketStatus) {
     if (!ticket || !user) return;
 
-    const previousStatus = ticket.status;
-
     try {
       await updateTicket(ticket.id, { status: newStatus });
-      const updatedTicket = { ...ticket, status: newStatus };
-      await sendTicketStatusNotification(updatedTicket, previousStatus);
-      setTicket(updatedTicket);
       toast.success('Status updated!');
     } catch (error) {
       console.error('[v0] Error updating status:', error);
@@ -157,14 +133,6 @@ export default function TicketDetailPage({
     setAssigning(true);
     try {
       await assignTicket(ticket.id, tech.uid, tech.name);
-      const updatedTicket = {
-        ...ticket,
-        assignedToId: tech.uid,
-        assignedToName: tech.name,
-        status: 'assigned' as const,
-      };
-      await sendTicketAssignmentNotification(updatedTicket);
-      setTicket(updatedTicket);
       toast.success(`Assigned to ${tech.name}`);
     } catch (error) {
       console.error('[v0] Error assigning ticket:', error);

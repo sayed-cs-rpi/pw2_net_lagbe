@@ -2,12 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/lib/auth-context';
-import { getTicketsByComplainer } from '@/lib/firestore-service';
+import { subscribeToTickets } from '@/lib/firestore-service';
 import { Ticket } from '@/lib/types';
 import { TicketCard } from '@/components/ticket-card';
 import Link from 'next/link';
 import { Plus, AlertCircle } from 'lucide-react';
 import { pageTitleClass, pageSubClass, primaryBtnClass, cardClass } from '@/components/app-shell';
+import { orderBy, where } from 'firebase/firestore';
 
 export default function ComplainerPage() {
   const { user } = useAuth();
@@ -15,19 +16,18 @@ export default function ComplainerPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchTickets() {
-      if (!user?.uid) return;
-      try {
-        const data = await getTicketsByComplainer(user.uid);
+    if (!user?.uid) return;
+
+    const unsubscribe = subscribeToTickets(
+      [where('complainerId', '==', user.uid), orderBy('createdAt', 'desc')],
+      data => {
         setTickets(data);
-      } catch (error) {
-        console.error('[v0] Error fetching tickets:', error);
-      } finally {
         setLoading(false);
       }
-    }
-    fetchTickets();
-  }, [user]);
+    );
+
+    return () => unsubscribe();
+  }, [user?.uid]);
 
   if (loading) {
     return (

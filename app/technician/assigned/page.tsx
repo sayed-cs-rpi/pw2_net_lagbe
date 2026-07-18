@@ -2,11 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/lib/auth-context';
-import { getTicketsByTechnician } from '@/lib/firestore-service';
+import { subscribeToTickets } from '@/lib/firestore-service';
 import { Ticket, TicketStatus } from '@/lib/types';
 import { TicketCard } from '@/components/ticket-card';
 import { AlertCircle } from 'lucide-react';
 import Link from 'next/link';
+import { orderBy, where } from 'firebase/firestore';
 
 const statusFilters: TicketStatus[] = ['assigned', 'in_progress', 'resolved', 'closed'];
 
@@ -17,20 +18,18 @@ export default function TechnicianAssignedPage() {
   const [activeFilter, setActiveFilter] = useState<TicketStatus | 'all'>('all');
 
   useEffect(() => {
-    async function fetchTickets() {
-      if (!user?.uid) return;
-      try {
-        const data = await getTicketsByTechnician(user.uid);
+    if (!user?.uid) return;
+
+    const unsubscribe = subscribeToTickets(
+      [where('assignedToId', '==', user.uid), orderBy('createdAt', 'desc')],
+      data => {
         setTickets(data);
-      } catch (error) {
-        console.error('[v0] Error fetching tickets:', error);
-      } finally {
         setLoading(false);
       }
-    }
+    );
 
-    fetchTickets();
-  }, [user]);
+    return () => unsubscribe();
+  }, [user?.uid]);
 
   const filteredTickets = activeFilter === 'all' 
     ? tickets 
