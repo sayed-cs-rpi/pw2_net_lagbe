@@ -169,7 +169,7 @@ export default function TicketDetailPage({
 
   const canUpdateStatus =
     (user?.role === 'technician' && ticket.assignedToId === user.uid) ||
-    user?.role === 'admin';
+    user?.role === 'admin' || (user?.role === 'staff' && ticket.assignedToId === user.uid);
 
   return (
     <div className="min-h-screen bg-background p-6">
