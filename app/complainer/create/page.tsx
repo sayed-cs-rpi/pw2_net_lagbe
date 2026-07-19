@@ -20,8 +20,9 @@ import {
 
 const categories = [
   'Technical Issue',
-  'Billing',
+  'Student Issue',
   'Account',
+  'Finance',
   'Feature Request',
   'Other',
 ];
