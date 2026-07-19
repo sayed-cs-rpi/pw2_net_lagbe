@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
+import router from 'next/router';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -11,7 +12,18 @@ export default function LoginPage() {
   console.log(user, authLoading);
   useEffect(() => {
     if (user && !authLoading) {
-      const redirectPath = user.role === 'complainer' ? '/complainer' : user.role === 'technician' ? '/technician' : '/admin';
+      let redirectPath;
+
+      if (user.role === 'complainer') {
+        redirectPath = '/complainer';
+      } else if (user.role === 'technician') {
+        redirectPath = '/technician';
+      } else if (user.role === 'staff') {
+        redirectPath = '/staff';
+      } else {
+        redirectPath = '/admin';
+      }
+
       router.push(redirectPath);
     }
   }, [user, authLoading, router]);

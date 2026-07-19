@@ -9,14 +9,14 @@ import { RealtimeProvider } from '@/components/realtime-provider'
 import { ForegroundMessageHandler } from '@/components/foreground-message-handler'
 
 export const metadata: Metadata = {
-  title: 'Ticket Based Internet Issue Management For RGPI',
+  title: 'Ticket Based Issue Management For RGPI',
   description: 'Enterprise support ticket management system',
   generator: 'v0.app',
   manifest: '/manifest.webmanifest',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'Ticket Based Internet Issue Management For RGPI',
+    title: 'Ticket Based Issue Management For RGPI',
   },
   icons: {
     icon: [
@@ -68,7 +68,7 @@ export default function RootLayout({
         {process.env.NODE_ENV === 'production' && <Analytics />}
         <footer className="bg-secondary/5 p-4 text-center text-xs text-foreground/50">
           <p className="mb-1">Copyright &copy; {new Date().getFullYear()} absyd. All Rights Reserved.</p>
-          <p>A ticket-based internet issue management system for RGPI.</p>
+          <p>A ticket-based issue management system for RGPI.</p>
         </footer>
       </body>
     </html>

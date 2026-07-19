@@ -259,6 +259,7 @@ export default function AdminUsersPage() {
                   <option value="complainer">Ticket Creator (Complainer)</option>
                   <option value="technician">Support Technician</option>
                   <option value="admin">Administrator</option>
+                  <option value="staff">Staff</option>
                 </select>
               </div>
               <div className="space-y-2">

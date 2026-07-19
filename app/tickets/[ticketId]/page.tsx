@@ -74,7 +74,12 @@ export default function TicketDetailPage({
     const unsubMessages = subscribeToTicketMessages(ticketId, setMessages);
 
     if (user.role === 'admin') {
-      getUsersByRole('technician').then(setTechnicians);
+      Promise.all([
+        getUsersByRole('technician'),
+        getUsersByRole('staff'),
+      ]).then(([technicians, staff]) => {
+        setTechnicians([...technicians, ...staff]);
+      });
     }
 
     return () => {

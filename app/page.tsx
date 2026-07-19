@@ -11,7 +11,7 @@ export default function Page() {
   useEffect(() => {
     if (!loading) {
       if (user) {
-        const redirectPath = user.role === 'complainer' ? '/complainer' : user.role === 'technician' ? '/technician' : '/admin';
+        const redirectPath = user.role === 'complainer' ? '/complainer' : user.role === 'technician' ? '/technician' : user.role === 'staff' ? '/staff' : '/admin';
         router.push(redirectPath);
       } else {
         router.push('/login');
